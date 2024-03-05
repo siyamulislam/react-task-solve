@@ -10,14 +10,14 @@ const Problem2 = () => {
     const [totalContact, setTotalContact] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     // const [pageSize, setPageSize] = useState(20);
- 
- 
+
+
     const [filteredContacts, setFilteredContacts] = useState([]);
     const [onlyEven, setOnlyEven] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-  
+
     const fetchAllContacts = async (currentPage, searchTerm) => {
-        try {  
+        try {
             let apiUrl = `https://contact.mediusware.com/api/contacts/?page=${currentPage}`;
 
 
@@ -27,15 +27,18 @@ const Problem2 = () => {
                 const encodedSearchTerm = encodeURIComponent(searchTerm);
                 apiUrl += `&search=${encodedSearchTerm}`;
             }
-    
+
             const response = await fetch(apiUrl);
             const data = await response.json();
             console.log(data);
             // setContacts(data.results);
-            if(data.results){
-                setContacts(prevContacts => [...prevContacts, ...data.results]);
+            //skip prev contacts if there is search value 
+            if (data.results) {
+                if (searchTerm!=='') setContacts(data.results);
+                else
+                    setContacts(prevContacts => [...prevContacts, ...data.results]);
+                setTotalContact(data.count)
             }
-            setTotalContact(data.count)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -45,7 +48,7 @@ const Problem2 = () => {
 
         try {
             let apiUrl = `https://contact.mediusware.com/api/country-contacts/United%20States/?page=${currentPage}`
-    
+
             // If searchTerm is provided, append it to the URL
             if (searchTerm) {
                 // URL-encode the search term
@@ -53,35 +56,37 @@ const Problem2 = () => {
                 console.log(encodedSearchTerm)
                 apiUrl += `&search=${encodedSearchTerm}`;
             }
-    
+
             const response = await fetch(apiUrl);
             const data = await response.json();
             console.log(data);
             // setContacts(data.results);
-            if(data.results){
-                setContacts(prevContacts => [...prevContacts, ...data.results]); 
-            } 
-            setTotalContact(data.count)
+            if (data.results) {
+                if (searchTerm!=='') setContacts(data.results);
+                else
+                    setContacts(prevContacts => [...prevContacts, ...data.results]);
+                setTotalContact(data.count)
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
 
-// fetch dynamic searchTerm against modal open
+    // fetch dynamic searchTerm against modal open
     useEffect(() => {
-        console.log(modalA,modalB)
-        modalA &&  fetchAllContacts(currentPage, searchTerm);
+        console.log(modalA, modalB)
+        modalA && fetchAllContacts(currentPage, searchTerm);
         modalB && fetchUsContacts(currentPage, searchTerm);
-    }, [modalA,modalB,currentPage,searchTerm]);
+    }, [modalA, modalB, currentPage, searchTerm]);
 
-  
+
 
 
     useEffect(() => {
         filterContacts();
-    }, [contacts,  onlyEven]);
+    }, [contacts, onlyEven]);
     const filterContacts = () => {
-        let filtered  = [...contacts];
+        let filtered = [...contacts];
         // Filter by even ID if onlyEven is checked
         if (onlyEven) {
             filtered = filtered.filter(contact => contact.id % 2 === 0);
@@ -122,7 +127,7 @@ const Problem2 = () => {
         const bottom =
             e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
         if (bottom) {
-            setCurrentPage(currentPage + 1); 
+            setCurrentPage(currentPage + 1);
         }
     };
 
@@ -147,19 +152,19 @@ const Problem2 = () => {
                             </FormGroup>
                             <div style={{ maxHeight: '300px', overflowY: 'auto' }} onScroll={handleScroll}>
                                 {filteredContacts.map((contact, key) => (
-                                    <div className='my-2' key={key}>{contact.phone}  
-                                    <hr></hr>
-                                    </div> 
+                                    <div className='my-2' key={key}>{contact.phone}
+                                        <hr></hr>
+                                    </div>
                                 ))}
-                              
+
                             </div>
                             <FormGroup className="my-2" controlId="formBasicCheckbox">
                                 <Form.Check type="checkbox" label="Only even" checked={onlyEven} onChange={handleCheckboxChange} />
                             </FormGroup>
                         </Form>
                     </Modal.Body>
-                    <Modal.Footer> 
-                        <Button variant="primary"  onClick={handleOpenModalA}>All Contacts</Button>
+                    <Modal.Footer>
+                        <Button variant="primary" onClick={handleOpenModalA}>All Contacts</Button>
                         <Button variant="secondary" onClick={handleOpenModalB}>US Contacts</Button>
                         <Button variant="danger" onClick={handleCloseModalA}>Close</Button>
                     </Modal.Footer>
@@ -177,9 +182,9 @@ const Problem2 = () => {
                             </FormGroup>
                             <div style={{ maxHeight: '300px', overflowY: 'auto' }} onScroll={handleScroll}>
                                 {filteredContacts.map((contact, key) => (
-                                     <div className='my-2' key={key}>{contact.phone}  
-                                     <hr></hr>
-                                     </div> 
+                                    <div className='my-2' key={key}>{contact.phone}
+                                        <hr></hr>
+                                    </div>
                                 ))}
                             </div>
                             <FormGroup className="mb-3" controlId="formBasicCheckbox">
