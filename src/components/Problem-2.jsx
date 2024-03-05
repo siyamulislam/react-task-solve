@@ -6,10 +6,10 @@ const Problem2 = () => {
     const [modalB, setModalB] = useState(false);
     const [modalC, setModalC] = useState(false);
 
-    const [allContacts, setAllContacts] = useState([]);
+    const [contacts, setContacts] = useState([]);
     const [totalContact, setTotalContact] = useState(0);
 
-    const [usContacts, setUsContacts] = useState([]);
+    // const [usContacts, setUsContacts] = useState([]);
     const [filteredContacts, setFilteredContacts] = useState([]);
     const [onlyEven, setOnlyEven] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,7 +29,7 @@ const Problem2 = () => {
             const response = await fetch(apiUrl);
             const data = await response.json();
             console.log(data);
-            setAllContacts(data.results);
+            setContacts(data.results);
             setTotalContact(data.count)
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -51,7 +51,7 @@ const Problem2 = () => {
             const response = await fetch(apiUrl);
             const data = await response.json();
             console.log(data);
-            setUsContacts(data.results);
+            setContacts(data.results);
             setTotalContact(data.count)
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -69,11 +69,9 @@ const Problem2 = () => {
 
     useEffect(() => {
         filterContacts();
-    }, [allContacts, usContacts, onlyEven]);
+    }, [contacts,  onlyEven]);
     const filterContacts = () => {
-        let filtered = [];
-        if (modalA) filtered = [...allContacts];
-        if (modalB) filtered = [...usContacts];
+        let filtered  = [...contacts];
         // Filter by even ID if onlyEven is checked
         if (onlyEven) {
             filtered = filtered.filter(contact => contact.id % 2 === 0);
@@ -92,12 +90,14 @@ const Problem2 = () => {
     const handleCloseModalC = () => setModalC(false);
 
     const handleOpenModalA = () => {
+        setSearchTerm('')
         fetchAllContacts();
         setModalA(true);
         setModalB(false);
     };
 
     const handleOpenModalB = () => {
+        setSearchTerm('')
         fetchUsContacts();
         setModalB(true);
         setModalA(false);
@@ -156,7 +156,7 @@ const Problem2 = () => {
                 </Modal>
                 <Modal show={modalB} onHide={handleCloseModalB}>
                     <Modal.Header closeButton>
-                        <Modal.Title>US Contacts ({filteredContacts.length})</Modal.Title>
+                        <Modal.Title>US Contacts ({filteredContacts.length}) <sub>shown:{filteredContacts.length}</sub></Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
