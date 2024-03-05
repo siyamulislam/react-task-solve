@@ -5,54 +5,85 @@ const Problem2 = () => {
     const [modalA, setModalA] = useState(false);
     const [modalB, setModalB] = useState(false);
     const [modalC, setModalC] = useState(false);
-    const [allContacts, setContacts] = useState([]);
+
+    const [allContacts, setAllContacts] = useState([]);
+    const [totalContact, setTotalContact] = useState(0);
+
     const [usContacts, setUsContacts] = useState([]);
     const [filteredContacts, setFilteredContacts] = useState([]);
     const [onlyEven, setOnlyEven] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    const fetchAllContacts = async () => {
+    const fetchAllContacts = async (searchTerm) => {
         try {
-            const response = await fetch('https://contact.mediusware.com/api/contacts/');
-            const dat = await response.json();
-            console.log(dat)
-            setContacts(dat.results);
+            let apiUrl = 'https://contact.mediusware.com/api/contacts/';
+    
+            // If searchTerm is provided, append it to the URL
+            if (searchTerm) {
+                // URL-encode the search term
+                const encodedSearchTerm = encodeURIComponent(searchTerm);
+                apiUrl += `?search=${encodedSearchTerm}`;
+            }
+    
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            console.log(data);
+            setAllContacts(data.results);
+            setTotalContact(data.count)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
-    const fetchUsContacts = async () => {
-        try {
-            const response = await fetch('https://contact.mediusware.com/api/country-contacts/United%20States/');
-            const dat = await response.json();
 
-            setUsContacts(dat.results);
+    const fetchUsContacts = async (searchTerm) => {
+
+        try {
+            let apiUrl = 'https://contact.mediusware.com/api/country-contacts/United%20States/';
+    
+            // If searchTerm is provided, append it to the URL
+            if (searchTerm) {
+                // URL-encode the search term
+                const encodedSearchTerm = encodeURIComponent(searchTerm);
+                apiUrl += `?search=${encodedSearchTerm}`;
+            }
+    
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            console.log(data);
+            setUsContacts(data.results);
+            setTotalContact(data.count)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
+
     };
+
+// fetch dynamic searchTerm against modal open
+    useEffect(() => {
+        modalA?  fetchAllContacts(searchTerm): fetchUsContacts(searchTerm);
+    }, [searchTerm]);
+
+  
+
 
     useEffect(() => {
         filterContacts();
-    }, [allContacts, usContacts, onlyEven, searchTerm]);
+    }, [allContacts, usContacts, onlyEven]);
     const filterContacts = () => {
         let filtered = [];
-        console.log(allContacts)
-
         if (modalA) filtered = [...allContacts];
-
         if (modalB) filtered = [...usContacts];
         // Filter by even ID if onlyEven is checked
         if (onlyEven) {
             filtered = filtered.filter(contact => contact.id % 2 === 0);
         }
         // Filter by search term
-        if (searchTerm) {
-            filtered = filtered.filter(contact =>
-                contact.phone.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
+        // if (searchTerm) {
+        //     filtered = filtered.filter(contact =>
+        //         contact.phone.toLowerCase().includes(searchTerm.toLowerCase())
+        //     );
+        // }
         setFilteredContacts(filtered);
     };
 
@@ -96,7 +127,7 @@ const Problem2 = () => {
                 </div>
                 <Modal show={modalA} onHide={handleCloseModalA}>
                     <Modal.Header closeButton>
-                        <Modal.Title>All Contacts ({filteredContacts.length})</Modal.Title>
+                        <Modal.Title>All Contacts ({totalContact}) <sub>shown:{filteredContacts.length}</sub> </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
@@ -118,7 +149,7 @@ const Problem2 = () => {
                         </Form>
                     </Modal.Body>
                     <Modal.Footer> 
-                        <Button variant="primary" onClick={handleOpenModalA}>All Contacts</Button>
+                        <Button variant="primary"  onClick={handleOpenModalA}>All Contacts</Button>
                         <Button variant="secondary" onClick={handleOpenModalB}>US Contacts</Button>
                         <Button variant="danger" onClick={handleCloseModalA}>Close</Button>
                     </Modal.Footer>
