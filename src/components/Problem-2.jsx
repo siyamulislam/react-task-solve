@@ -8,61 +8,71 @@ const Problem2 = () => {
 
     const [contacts, setContacts] = useState([]);
     const [totalContact, setTotalContact] = useState(0);
-
-    // const [usContacts, setUsContacts] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    // const [pageSize, setPageSize] = useState(20);
+ 
+ 
     const [filteredContacts, setFilteredContacts] = useState([]);
     const [onlyEven, setOnlyEven] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
+  
+    const fetchAllContacts = async (currentPage, searchTerm) => {
+        try {  
+            let apiUrl = `https://contact.mediusware.com/api/contacts/?page=${currentPage}`;
 
-    const fetchAllContacts = async (searchTerm) => {
-        try {
-            let apiUrl = 'https://contact.mediusware.com/api/contacts/';
-    
+
             // If searchTerm is provided, append it to the URL
             if (searchTerm) {
                 // URL-encode the search term
                 const encodedSearchTerm = encodeURIComponent(searchTerm);
-                apiUrl += `?search=${encodedSearchTerm}`;
+                apiUrl += `&search=${encodedSearchTerm}`;
             }
     
             const response = await fetch(apiUrl);
             const data = await response.json();
             console.log(data);
-            setContacts(data.results);
+            // setContacts(data.results);
+            if(data.results){
+                setContacts(prevContacts => [...prevContacts, ...data.results]);
+            }
             setTotalContact(data.count)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
 
-    const fetchUsContacts = async (searchTerm) => {
+    const fetchUsContacts = async (currentPage, searchTerm) => {
 
         try {
-            let apiUrl = 'https://contact.mediusware.com/api/country-contacts/United%20States/';
+            let apiUrl = `https://contact.mediusware.com/api/country-contacts/United%20States/?page=${currentPage}`
     
             // If searchTerm is provided, append it to the URL
             if (searchTerm) {
                 // URL-encode the search term
                 const encodedSearchTerm = encodeURIComponent(searchTerm);
-                apiUrl += `?search=${encodedSearchTerm}`;
+                console.log(encodedSearchTerm)
+                apiUrl += `&search=${encodedSearchTerm}`;
             }
     
             const response = await fetch(apiUrl);
             const data = await response.json();
             console.log(data);
-            setContacts(data.results);
+            // setContacts(data.results);
+            if(data.results){
+                setContacts(prevContacts => [...prevContacts, ...data.results]); 
+            } 
             setTotalContact(data.count)
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-
     };
 
 // fetch dynamic searchTerm against modal open
     useEffect(() => {
-        modalA?  fetchAllContacts(searchTerm): fetchUsContacts(searchTerm);
-    }, [searchTerm]);
+        console.log(modalA,modalB)
+        modalA &&  fetchAllContacts(currentPage, searchTerm);
+        modalB && fetchUsContacts(currentPage, searchTerm);
+    }, [modalA,modalB,currentPage,searchTerm]);
 
   
 
@@ -76,12 +86,6 @@ const Problem2 = () => {
         if (onlyEven) {
             filtered = filtered.filter(contact => contact.id % 2 === 0);
         }
-        // Filter by search term
-        // if (searchTerm) {
-        //     filtered = filtered.filter(contact =>
-        //         contact.phone.toLowerCase().includes(searchTerm.toLowerCase())
-        //     );
-        // }
         setFilteredContacts(filtered);
     };
 
@@ -91,16 +95,21 @@ const Problem2 = () => {
 
     const handleOpenModalA = () => {
         setSearchTerm('')
-        fetchAllContacts();
-        setModalA(true);
+        setCurrentPage(1)
+        setTotalContact(0)
+        setFilteredContacts([])
         setModalB(false);
+        setModalA(true);
     };
 
     const handleOpenModalB = () => {
         setSearchTerm('')
-        fetchUsContacts();
-        setModalB(true);
+        setCurrentPage(1)
+        setTotalContact(0)
+        setFilteredContacts([])
         setModalA(false);
+        setModalB(true);
+
     };
 
     const handleOpenModalC = () => setModalC(true);
@@ -113,7 +122,7 @@ const Problem2 = () => {
         const bottom =
             e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
         if (bottom) {
-            setCurrentPage(currentPage + 1);
+            setCurrentPage(currentPage + 1); 
         }
     };
 
@@ -127,7 +136,8 @@ const Problem2 = () => {
                 </div>
                 <Modal show={modalA} onHide={handleCloseModalA}>
                     <Modal.Header closeButton>
-                        <Modal.Title>All Contacts ({totalContact}) <sub>shown:{filteredContacts.length}</sub> </Modal.Title>
+                        <Modal.Title>All Contacts</Modal.Title>
+                        {/* <Modal.Title>All Contacts ({totalContact}) <sub>shown:{filteredContacts.length}</sub> </Modal.Title> */}
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
@@ -156,7 +166,8 @@ const Problem2 = () => {
                 </Modal>
                 <Modal show={modalB} onHide={handleCloseModalB}>
                     <Modal.Header closeButton>
-                        <Modal.Title>US Contacts ({filteredContacts.length}) <sub>shown:{filteredContacts.length}</sub></Modal.Title>
+                        <Modal.Title>US Contacts</Modal.Title>
+                        {/* <Modal.Title>US Contacts ({filteredContacts.length}) <sub>shown:{filteredContacts.length}</sub></Modal.Title> */}
                     </Modal.Header>
                     <Modal.Body>
                         <Form>
